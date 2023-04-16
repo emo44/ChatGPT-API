@@ -1,5 +1,3 @@
-# pyinstaller --windowed ChatGPT-EMO.py --onefile  --icon="C:\Users\emo\python\images\openai.ico" 
-
 import pyperclip
 import os
 import openai
@@ -90,6 +88,7 @@ def main():
 
         [sg.Text("", expand_x=True), sg.Button("Borrar", size=(10, 1), key="clear_response"), sg.Button("Copiar", size=(10, 1), key="copy_response")],
         [sg.Text("Log:           "),sg.Multiline(size=(100, 10), key="log_output")],
+        [sg.Text("", expand_x=True),sg.Button("Borrar log", size=(10, 1), key="clear_log")],
         [sg.Text("Costo total: $", size=(15, 1)), sg.Text(f"{total_cost:.2f}", key="total_cost_value", size=(10, 1))],
         [sg.Button("Acerca", size=(10, 1), key="about"), sg.Button("Salir", size=(10, 1), key="exit", button_color=("white", "red"), pad=((650, 0), (10, 10)))]
         
@@ -98,7 +97,7 @@ def main():
 
 
     # Create the window
-    window = sg.Window("Emo Openai API interface", layout, size=(800, 660))
+    window = sg.Window("Emo Openai API interface", layout, size=(800, 700))
 
     while True:
         event, values = window.read()
@@ -151,7 +150,10 @@ def main():
             show_about_window()
 
         elif event == '-LOG-':
-            window['log_output'].update(values['log_output']+"\n" + values[event])        
+            window['log_output'].update(values['log_output']+"\n" + values[event])
+            
+        elif event == "clear_log":
+            window["log_output"].update("")
 
     # Close the window when the loop exits
     window.close()
