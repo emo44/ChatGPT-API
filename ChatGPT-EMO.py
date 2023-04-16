@@ -1,3 +1,4 @@
+# pyinstaller --windowed ChatGPT-EMO.py --onefile  --icon="C:\Users\emo\python\images\openai.ico" 
 import pyperclip
 import os
 import openai
@@ -80,7 +81,7 @@ def main():
         [sg.Text("Pregunta:  "), sg.Multiline(size=(100, 10), key="question", text_color='red')],
  
        
-        [sg.Text("", expand_x=True), sg.Button("Enviar", size=(10, 1), key="submit"), sg.Button("Borrar", size=(10, 1), key="clear_question")],
+        [sg.Text("", expand_x=True), sg.Button("Enviar", size=(10, 1), key="submit", button_color=("white", "green")), sg.Button("Borrar", size=(10, 1), key="clear_question")],
 
         [sg.Text("Respuesta:"), sg.Multiline(size=(100, 10), key="response", text_color='blue')],
 
@@ -90,7 +91,7 @@ def main():
         [sg.Text("Log:           "),sg.Multiline(size=(100, 10), key="log_output")],
         [sg.Text("", expand_x=True),sg.Button("Borrar log", size=(10, 1), key="clear_log")],
         [sg.Text("Costo total: $", size=(15, 1)), sg.Text(f"{total_cost:.2f}", key="total_cost_value", size=(10, 1))],
-        [sg.Button("Acerca", size=(10, 1), key="about"), sg.Button("Salir", size=(10, 1), key="exit", button_color=("white", "red"), pad=((650, 0), (10, 10)))]
+        [sg.Button("Acerca", size=(10, 1), key="about"), sg.Button("Salir", size=(10, 1), key="exit", button_color=("white", "red"), pad=((620, 0), (10, 10)))]
         
     ]
     
