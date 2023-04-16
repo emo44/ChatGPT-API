@@ -16,5 +16,6 @@ Lo bueno es que puedes utilizar el propio programa para mejorarse a si mismo!
 
 Aqui pidiendo que ponga un boton de borrar log:
 ![Captura de pantalla 2023-04-16 202700](https://user-images.githubusercontent.com/2462238/232333970-c31032f6-0774-4a3c-a655-5505aba4095c.jpg)
+
 Y aqui la respuesta:
 ![Captura de pantalla 2023-04-16 202807](https://user-images.githubusercontent.com/2462238/232334035-1d22023a-86da-4021-9d16-bad886bec1ad.jpg)
