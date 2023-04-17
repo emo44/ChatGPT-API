@@ -1,4 +1,7 @@
 # pyinstaller --windowed ChatGPT-EMO.py --onefile  --icon="C:\Users\emo\python\images\openai.ico" 
+import requests
+import json
+import webbrowser
 import pyperclip
 import time
 import os
@@ -12,6 +15,28 @@ from base64 import urlsafe_b64encode, urlsafe_b64decode
 ERROR_MESSAGES = {
     "EMPTY_API_KEY": "Por favor, introduce una clave API.",
 }
+
+def check_for_updates():
+    url = "https://api.github.com/repos/emo44/ChatGPT-API/releases/latest"
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = json.loads(response.text)
+        
+        latest_version = data['tag_name']
+        current_version = "V1.0.4"  # Define tu versión actual aquí
+        if current_version != latest_version:
+            sg.popup(
+                f"¡Hay una nueva versión disponible ({latest_version})!",
+                title="Actualización disponible",
+                keep_on_top=True,
+                modal=True,
+                location=(None, None),
+                text_color="red",
+                button_color=("white", "blue"),
+                custom_text=("Ir a la página de Github", "Cerrar")
+            )
+            webbrowser.open("https://github.com/emo44/ChatGPT-API")
+
 def generate_encryption_key():
     return Fernet.generate_key()
 
@@ -192,6 +217,7 @@ def update_api_key(new_api_key):
 
 message_history = [{"role": "system", "content": "You are a helpful assistant."}]
 def main():
+    
     global total_cost
     api_key, total_cost, config = load_config()
     save_total_cost(total_cost, config)
@@ -222,7 +248,7 @@ def main():
 
     # Create the window
     window = sg.Window("Emo Openai API interface", layout, size=(800, 700))
-
+    check_for_updates()
     while True:
         event, values = window.read()
 #         with open("log.txt", "r") as f:
