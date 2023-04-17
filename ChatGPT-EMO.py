@@ -282,6 +282,7 @@ def main():
                 thread_event.set()
                 window["response"].update("Solicitud cancelada.")
                 window["question"].update("")
+                window["submit"].update(disabled=False)
 
         elif event == '-RESPONSE-':
             # Update the GUI with the response and update the total cost
@@ -358,6 +359,7 @@ def generate_response(question):
     message_history.append({"role": "assistant", "content": response_text})
 
     response_cost = response.usage['total_tokens'] * 0.000002  # Assuming $0.0003 per token
+    
     return response_text, response_cost
 
 def clear_history():
