@@ -1,5 +1,6 @@
 # pyinstaller --windowed ChatGPT-EMO.py --onefile  --icon="C:\Users\emo\python\images\openai.ico" 
 import pyperclip
+import time
 import os
 import openai
 import PySimpleGUI as sg
@@ -8,7 +9,9 @@ import threading
 import sys
 from cryptography.fernet import Fernet
 from base64 import urlsafe_b64encode, urlsafe_b64decode
-
+ERROR_MESSAGES = {
+    "EMPTY_API_KEY": "Por favor, introduce una clave API.",
+}
 def generate_encryption_key():
     return Fernet.generate_key()
 
@@ -80,12 +83,16 @@ if api_key is None:
 
     while True:
         event, values = window.read()
+
         if event == "submit_api_key":
             api_key = values["input_api_key"]
-            encryption_key = generate_encryption_key()
-            save_api_key_to_config(api_key, encryption_key)
-            window.close()
-            break
+            if not api_key:
+                window["api_key_error"].update(ERROR_MESSAGES["EMPTY_API_KEY"])
+            else:
+                encryption_key = generate_encryption_key()
+                save_api_key_to_config(api_key, encryption_key)
+                window.close()
+                break
         elif event == "cancel_api_key" or event == sg.WIN_CLOSED:
             sys.exit()
 
@@ -144,6 +151,40 @@ def show_about_window():
         if event == "Cerrar" or event == sg.WIN_CLOSED:
             break
     window.close()
+def show_configuration_window():
+    layout = [
+        [sg.Text("Introduzca la nueva clave API:")],
+        [sg.InputText("", key="new_api_key")],
+        [sg.Text("", key="new_api_key_error", text_color="red")],
+        [sg.Button("Guardar", key="save_api_key"), sg.Button("Cancelar", key="cancel_new_api_key")],  # Cambia aquí
+    ]
+    window = sg.Window("Configuración", layout, keep_on_top=True)
+
+    while True:
+        event, values = window.read()
+        if event == "save_api_key":  # Cambia aquí
+            new_api_key = values["new_api_key"]
+            if not new_api_key:
+                window["new_api_key_error"].update(ERROR_MESSAGES["EMPTY_API_KEY"])
+            else:
+                update_api_key(new_api_key)
+                window.close()
+                sg.popup("La clave API ha sido actualizada.")
+                break
+        elif event == "cancel_new_api_key" or event == sg.WIN_CLOSED:
+            break
+
+    window.close()
+
+def update_api_key(new_api_key):
+    global api_key, config
+    encryption_key = generate_encryption_key()
+    save_api_key_to_config(new_api_key, encryption_key)
+    api_key = new_api_key
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    openai.api_key = api_key  # Agrega esta línea para actualizar la clave API en la biblioteca OpenAI
+   
 
 
 message_history = [{"role": "system", "content": "You are a helpful assistant."}]
@@ -161,7 +202,7 @@ def main():
         [sg.Text("Pregunta:  "), sg.Multiline(size=(100, 10), key="question", text_color='red')],
  
        
-                [sg.Text("", expand_x=True), sg.Button("Enviar", size=(10, 1), key="submit", button_color=("white", "green")), sg.Button("Cancelar", size=(10, 1), key="cancel"), sg.Button("Borrar", size=(10, 1), key="clear_question")],
+        [sg.Text("", expand_x=True), sg.Button("Enviar", size=(10, 1), key="submit", button_color=("white", "green")), sg.Button("Cancelar", size=(10, 1), key="cancel"), sg.Button("Borrar", size=(10, 1), key="clear_question")],
         [sg.Text("Respuesta:"), sg.Multiline(size=(100, 10), key="response", text_color='blue')],
 
         
@@ -170,8 +211,8 @@ def main():
         [sg.Text("Log:           "),sg.Multiline(size=(100, 10), key="log_output")],
         [sg.Text("", expand_x=True),sg.Button("Borrar log", size=(10, 1), key="clear_log")],
         [sg.Text("Costo total: $", size=(15, 1)), sg.Text(f"{total_cost:.2f}", key="total_cost_value", size=(10, 1))],
-        [sg.Button("Acerca", size=(10, 1), key="about"), sg.Button("Salir", size=(10, 1), key="exit", button_color=("white", "red"), pad=((620, 0), (10, 10)))]
-        
+        [sg.Button("Configuración", size=(14, 1), key="config"), sg.Button("Acerca", size=(10, 1), key="about"), sg.Button("Salir", size=(10, 1), key="exit", button_color=("white", "red"), pad=((500, 0), (10, 10)))]
+
     ]
     
 
@@ -199,6 +240,7 @@ def main():
 
             # Show a message indicating that we're waiting for a response
             window["response"].update("Esperando respuesta de OpenAI...")
+            time.sleep(0.1)
             window.Refresh()
 
         elif event == "cancel":
@@ -244,6 +286,11 @@ def main():
             
         elif event == "clear_log":
             window["log_output"].update("")
+        elif event == "config":
+            show_configuration_window()  # Llama a la función
+
+
+
 
     # Close the window when the loop exits
     window.close()
