@@ -23,7 +23,7 @@ def check_for_updates():
         data = json.loads(response.text)
         
         latest_version = data['tag_name']
-        current_version = "V1.0.4"  # Define tu versión actual aquí
+        current_version = "V1.0.5"  # Define tu versión actual aquí
         if current_version != latest_version:
             sg.popup(
                 f"¡Hay una nueva versión disponible ({latest_version})!",
@@ -219,6 +219,7 @@ message_history = [{"role": "system", "content": "You are a helpful assistant."}
 def main():
     
     global total_cost
+
     api_key, total_cost, config = load_config()
     save_total_cost(total_cost, config)
 
@@ -327,6 +328,12 @@ def main():
 
         elif event == '-ERROR-':
             sg.popup_error(values['-ERROR-'])
+            clear_history()
+            
+            thread_event.set()
+            window["response"].update("Solicitud cancelada.")
+            window["question"].update("")
+            window["submit"].update(disabled=False)
 
 
     # Close the window when the loop exits
@@ -353,6 +360,9 @@ def generate_response(question):
     response_cost = response.usage['total_tokens'] * 0.000002  # Assuming $0.0003 per token
     return response_text, response_cost
 
+def clear_history():
+    global message_history
+    message_history.clear()
 
 
 if __name__ == "__main__":
