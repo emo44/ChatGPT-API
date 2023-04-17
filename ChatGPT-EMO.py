@@ -6,6 +6,19 @@ import PySimpleGUI as sg
 import configparser
 import threading
 import sys
+from cryptography.fernet import Fernet
+from base64 import urlsafe_b64encode, urlsafe_b64decode
+
+def generate_encryption_key():
+    return Fernet.generate_key()
+
+def encrypt_api_key(api_key, encryption_key):
+    fernet = Fernet(encryption_key)
+    return fernet.encrypt(api_key.encode()).decode()
+
+def decrypt_api_key(encrypted_api_key, encryption_key):
+    fernet = Fernet(encryption_key)
+    return fernet.decrypt(encrypted_api_key.encode()).decode()
 
 def generate_response_async(question, window):
     response, response_cost = generate_response(question)
@@ -18,7 +31,9 @@ def load_config():
     config.read("config.ini")
 
     if "API" in config.sections() and "api_key" in config["API"]:
-        api_key = config["API"]["api_key"]
+        encrypted_api_key = config["API"]["api_key"]
+        encryption_key = urlsafe_b64decode(config["API"]["encryption_key"])
+        api_key = decrypt_api_key(encrypted_api_key, encryption_key)
     else:
         api_key = None
 
@@ -34,6 +49,38 @@ def load_config():
 
 
     return api_key, total_cost
+def save_api_key_to_config(api_key, encryption_key):
+    config = configparser.ConfigParser()
+    config["API"] = {
+        "api_key": encrypt_api_key(api_key, encryption_key),
+        "encryption_key": urlsafe_b64encode(encryption_key).decode(),
+    }
+    if not config.has_section("Cost"):
+        config["Cost"] = {"total_cost": "0.0"}
+
+    with open("config.ini", "w") as configfile:
+        config.write(configfile)
+
+api_key, total_cost = load_config()
+
+if api_key is None:
+    layout = [
+        [sg.Text("Por favor, introduce tu API key, la cifraré por seguridad:")],
+        [sg.InputText("", key="input_api_key")],
+        [sg.Button("OK", key="submit_api_key"), sg.Button("Cancelar", key="cancel_api_key")],
+    ]
+    window = sg.Window("Introduce tu API key", layout, keep_on_top=True)
+
+    while True:
+        event, values = window.read()
+        if event == "submit_api_key":
+            api_key = values["input_api_key"]
+            encryption_key = generate_encryption_key()
+            save_api_key_to_config(api_key, encryption_key)
+            window.close()
+            break
+        elif event == "cancel_api_key" or event == sg.WIN_CLOSED:
+            sys.exit()
 
 
 def save_total_cost(total_cost):
@@ -53,8 +100,31 @@ api_key, total_cost = load_config()
 
 
 if api_key is None:
-    sg.popup("Error", "No se encontró el archivo config.ini o el valor de la API.\Crea un archivo config.ini con\n[API]\napi_key = tuAPI\n[Cost]\ntotal_cost = 0.0 ", location=(None, None))
-    sys.exit()
+    layout = [
+        [sg.Text("No se encontró el archivo config.ini o el valor de la API. Por favor, introduce tu API key:")],
+        [sg.InputText("", key="input_api_key")],
+        [sg.Button("OK", key="submit_api_key"), sg.Button("Cancelar", key="cancel_api_key")],
+    ]
+    window = sg.Window("Introduce tu API key", layout, keep_on_top=True)
+    
+    while True:
+        event, values = window.read()
+        if event == "submit_api_key":
+            api_key = values["input_api_key"]
+            encryption_key = generate_encryption_key()
+            encrypted_api_key = encrypt_api_key(api_key, encryption_key)
+            config = configparser.ConfigParser()
+            config["API"] = {
+                "api_key": encrypted_api_key,
+                "encryption_key": urlsafe_b64encode(encryption_key).decode(),
+            }
+            with open("config.ini", "w") as configfile:
+                config.write(configfile)
+            window.close()
+            break
+        elif event == "cancel_api_key" or event == sg.WIN_CLOSED:
+            sys.exit()
+
 
 openai.api_key = api_key
 
@@ -123,15 +193,16 @@ def main():
         elif event == '-RESPONSE-':
             # Update the GUI with the response and update the total cost
             response, response_cost = values[event]
-            with open("log.txt", "a") as f:
-                f.write(f"Pregunta: {values['question']}\n")
-                f.write(f"Respuesta: {values[event][0]}\n\n")
+
             #window.write_event_value('-LOG-', f"Pregunta: {question}\nRespuesta: {response}\n\n")    
             window["response"].update(response)
             window["question"].update("")
             total_cost += response_cost
             window["total_cost_value"].update(f"{total_cost:.2f}")
             save_total_cost(total_cost)
+            with open("log.txt", "a") as f:
+                f.write(f"Pregunta: {values['question']}\n")
+                f.write(f"Respuesta: {values[event][0]}\n\n")
             if response_cost > 17.50:
                 sg.popup("Advertencia", f"El coste total acumulado es de ${response_cost:.2f}, superior a $17.50.", location=(None, None))
         elif event == "clear_question":
