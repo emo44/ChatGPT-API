@@ -23,7 +23,7 @@ def check_for_updates():
         data = json.loads(response.text)
         
         latest_version = data['tag_name']
-        current_version = "V1.0.5"  # Define tu versión actual aquí
+        current_version = "V1.0.6"  # Define tu versión actual aquí
         if current_version != latest_version:
             sg.popup(
                 f"¡Hay una nueva versión disponible ({latest_version})!",
