@@ -20,11 +20,17 @@ def decrypt_api_key(encrypted_api_key, encryption_key):
     fernet = Fernet(encryption_key)
     return fernet.decrypt(encrypted_api_key.encode()).decode()
 
-def generate_response_async(question, window):
+
+def generate_response_async(question, window, thread_event):
+    if thread_event.is_set():
+        return
+
     response, response_cost = generate_response(question)
 
-    window.write_event_value('-RESPONSE-', (response, response_cost))
-    window.write_event_value('-LOG-', f"Pregunta: {question}\nRespuesta: {response}\n\n")
+    if not thread_event.is_set():
+        window.write_event_value('-RESPONSE-', (response, response_cost))
+        window.write_event_value('-LOG-', f"Pregunta: {question}\nRespuesta: {response}\n\n")
+    
 
 def load_config():
     config = configparser.ConfigParser()
@@ -151,8 +157,7 @@ def main():
         [sg.Text("Pregunta:  "), sg.Multiline(size=(100, 10), key="question", text_color='red')],
  
        
-        [sg.Text("", expand_x=True), sg.Button("Enviar", size=(10, 1), key="submit", button_color=("white", "green")), sg.Button("Borrar", size=(10, 1), key="clear_question")],
-
+                [sg.Text("", expand_x=True), sg.Button("Enviar", size=(10, 1), key="submit", button_color=("white", "green")), sg.Button("Cancelar", size=(10, 1), key="cancel"), sg.Button("Borrar", size=(10, 1), key="clear_question")],
         [sg.Text("Respuesta:"), sg.Multiline(size=(100, 10), key="response", text_color='blue')],
 
         
@@ -184,11 +189,19 @@ def main():
             question = values["question"]
 
             # Call the OpenAI API to generate a response asynchronously
-            threading.Thread(target=generate_response_async, args=(question, window)).start()
+            thread_event = threading.Event()
+            response_thread = threading.Thread(target=generate_response_async, args=(question, window, thread_event))
+            response_thread.start()
 
             # Show a message indicating that we're waiting for a response
             window["response"].update("Esperando respuesta de OpenAI...")
             window.Refresh()
+
+        elif event == "cancel":
+            if response_thread.is_alive():
+                thread_event.set()
+                window["response"].update("Solicitud cancelada.")
+                window["question"].update("")
 
         elif event == '-RESPONSE-':
             # Update the GUI with the response and update the total cost
