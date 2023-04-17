@@ -54,7 +54,7 @@ def load_config():
         file.close()
 
 
-    return api_key, total_cost
+    return api_key, total_cost,config
 def save_api_key_to_config(api_key, encryption_key):
     config = configparser.ConfigParser()
     config["API"] = {
@@ -67,7 +67,8 @@ def save_api_key_to_config(api_key, encryption_key):
     with open("config.ini", "w") as configfile:
         config.write(configfile)
 
-api_key, total_cost = load_config()
+api_key, total_cost, config = load_config()
+
 
 if api_key is None:
     layout = [
@@ -89,7 +90,7 @@ if api_key is None:
             sys.exit()
 
 
-def save_total_cost(total_cost):
+def save_total_cost(total_cost, config):
     config = configparser.ConfigParser()
     config.read("config.ini")
 
@@ -102,7 +103,8 @@ def save_total_cost(total_cost):
         config.write(configfile)
 
 
-api_key, total_cost = load_config()
+api_key, total_cost, config = load_config()
+
 
 
 if api_key is None:
@@ -147,6 +149,8 @@ def show_about_window():
 message_history = [{"role": "system", "content": "You are a helpful assistant."}]
 def main():
     global total_cost
+    api_key, total_cost, config = load_config()
+    save_total_cost(total_cost, config)
 
 
 
@@ -212,7 +216,8 @@ def main():
             window["question"].update("")
             total_cost += response_cost
             window["total_cost_value"].update(f"{total_cost:.2f}")
-            save_total_cost(total_cost)
+            save_total_cost(total_cost, config)
+
             with open("log.txt", "a") as f:
                 f.write(f"Pregunta: {values['question']}\n")
                 f.write(f"Respuesta: {values[event][0]}\n\n")
