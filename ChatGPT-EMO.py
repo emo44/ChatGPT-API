@@ -25,15 +25,18 @@ def decrypt_api_key(encrypted_api_key, encryption_key):
 
 
 def generate_response_async(question, window, thread_event):
-    if thread_event.is_set():
-        return
+    try:
+        if thread_event.is_set():
+            return
 
-    response, response_cost = generate_response(question)
+        response, response_cost = generate_response(question)
 
-    if not thread_event.is_set():
-        window.write_event_value('-RESPONSE-', (response, response_cost))
-        window.write_event_value('-LOG-', f"Pregunta: {question}\nRespuesta: {response}\n\n")
-    
+        if not thread_event.is_set():
+            window.write_event_value('-RESPONSE-', (response, response_cost))
+            window.write_event_value('-LOG-', f"Pregunta: {question}\nRespuesta: {response}\n\n")
+    except Exception as e:
+        window.write_event_value('-ERROR-', str(e))
+
 
 def load_config():
     config = configparser.ConfigParser()
@@ -229,7 +232,11 @@ def main():
         if event in (None, "exit"):
             break
 
+
         if event == "submit":
+            # Desactivar el botón "Enviar"
+            window["submit"].update(disabled=True)
+
             # Get the question from the input
             question = values["question"]
 
@@ -252,6 +259,9 @@ def main():
         elif event == '-RESPONSE-':
             # Update the GUI with the response and update the total cost
             response, response_cost = values[event]
+
+            # Volver a activar el botón "Enviar"
+            window["submit"].update(disabled=False)
 
             #window.write_event_value('-LOG-', f"Pregunta: {question}\nRespuesta: {response}\n\n")    
             window["response"].update(response)
@@ -289,7 +299,8 @@ def main():
         elif event == "config":
             show_configuration_window()  # Llama a la función
 
-
+        elif event == '-ERROR-':
+            sg.popup_error(values['-ERROR-'])
 
 
     # Close the window when the loop exits
