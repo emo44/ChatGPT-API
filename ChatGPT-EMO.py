@@ -13,7 +13,7 @@ import threading
 import sys
 from cryptography.fernet import Fernet
 from base64 import urlsafe_b64encode, urlsafe_b64decode
-version="V1.0.10"
+version="V1.1.0"
 ERROR_MESSAGES = {
     "EMPTY_API_KEY": "Por favor, introduce una clave API.",
 }
