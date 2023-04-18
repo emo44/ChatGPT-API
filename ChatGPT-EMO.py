@@ -1,4 +1,4 @@
-# pyinstaller --windowed  ChatGPT-EMO.py --onefile  --icon="C:\Users\emo\python\images\openai.ico" 
+# pyinstaller --windowed  ChatGPT-EMO.py --onefile 
 import base64
 import requests
 import json
@@ -13,6 +13,7 @@ import threading
 import sys
 from cryptography.fernet import Fernet
 from base64 import urlsafe_b64encode, urlsafe_b64decode
+version="V1.0.9"
 ERROR_MESSAGES = {
     "EMPTY_API_KEY": "Por favor, introduce una clave API.",
 }
@@ -25,7 +26,7 @@ def check_for_updates():
         data = json.loads(response.text)
         
         latest_version = data['tag_name']
-        current_version = "V1.0.8"  # Define tu versión actual aquí
+        current_version = version  # Define tu versión actual aquí
         if current_version != latest_version:
             sg.popup(
                 f"¡Hay una nueva versión disponible ({latest_version})!",
@@ -40,7 +41,13 @@ def check_for_updates():
                 custom_text=("Ir a la página de Github", "Cerrar")
             )
             webbrowser.open("https://github.com/emo44/ChatGPT-API")
-
+def load_models():
+    models = openai.Model.list()
+    gpt_models = []
+    for model in models['data']:
+        if 'gpt' in model['id']:
+            gpt_models.append(model['id'])
+    return gpt_models
 def generate_encryption_key():
     return Fernet.generate_key()
 
@@ -53,12 +60,12 @@ def decrypt_api_key(encrypted_api_key, encryption_key):
     return fernet.decrypt(encrypted_api_key.encode()).decode()
 
 
-def generate_response_async(question, window, thread_event):
+def generate_response_async(question,modelo, window, thread_event):
     try:
         if thread_event.is_set():
             return
 
-        response, response_cost = generate_response(question)
+        response, response_cost = generate_response(question,modelo)
 
         if not thread_event.is_set():
             window.write_event_value('-RESPONSE-', (response, response_cost))
@@ -221,8 +228,9 @@ def update_api_key(new_api_key):
 
 
 message_history = [{"role": "system", "content": "You are a helpful assistant."}]
+
 def main():
-    
+    modelo="gpt-3.5-turbo"
     global total_cost
 
     api_key, total_cost, config = load_config()
@@ -234,16 +242,17 @@ def main():
 
 
     layout = [
-        [sg.Text("Pregunta:  "), sg.Multiline(size=(100, 10), key="question", text_color='red')],
+        [sg.Text("Modelos GPT:"), sg.Combo(load_models(), default_value=modelo, key="model")],
+        [sg.Text("Pregunta:  "), sg.Multiline(size=(100, 8), key="question", text_color='red')],
  
        
         [sg.Text("", expand_x=True), sg.Button("Enviar", size=(10, 1), key="submit", button_color=("white", "green")), sg.Button("Cancelar", size=(10, 1), key="cancel"), sg.Button("Borrar", size=(10, 1), key="clear_question")],
-        [sg.Text("Respuesta:"), sg.Multiline(size=(100, 10), key="response", text_color='blue')],
+        [sg.Text("Respuesta:"), sg.Multiline(size=(100, 8), key="response", text_color='blue')],
 
         
 
         [sg.Text("", expand_x=True), sg.Button("Borrar", size=(10, 1), key="clear_response"), sg.Button("Copiar", size=(10, 1), key="copy_response")],
-        [sg.Text("Log:           "),sg.Multiline(size=(100, 10), key="log_output")],
+        [sg.Text("Log:           "),sg.Multiline(size=(100, 7), key="log_output")],
         [sg.Text("", expand_x=True),sg.Button("Borrar log", size=(10, 1), key="clear_log")],
         [sg.Text("Costo total: $", size=(15, 1)), sg.Text(f"{total_cost:.2f}", key="total_cost_value", size=(10, 1))],
         [sg.Button("Nuevo Chat", size=(14, 1), key="nuevo", button_color=("white", "blue")),sg.Button("Configuración", size=(14, 1), key="config"), sg.Button("Acerca", size=(10, 1), key="about"), sg.Button("Salir", size=(10, 1), key="exit", button_color=("white", "red"), pad=((350, 0), (10, 10)))]
@@ -253,7 +262,7 @@ def main():
 
 
     # Create the window
-    window = sg.Window("Emo Openai API interface", layout, size=(800, 700), icon=icono)
+    window = sg.Window("Emo Openai API interface -" +version ,layout, size=(800, 600), icon=icono)
     
     check_for_updates()
     while True:
@@ -264,7 +273,10 @@ def main():
 
         if event in (None, "exit"):
             break
+        if event == "modelo":
 
+            modelo = values["model"]
+            
 
         if event == "submit":
             # Desactivar el botón "Enviar"
@@ -275,7 +287,7 @@ def main():
 
             # Call the OpenAI API to generate a response asynchronously
             thread_event = threading.Event()
-            response_thread = threading.Thread(target=generate_response_async, args=(question, window, thread_event))
+            response_thread = threading.Thread(target=generate_response_async, args=(question,modelo, window, thread_event))
             response_thread.start()
 
             # Show a message indicating that we're waiting for a response
@@ -353,15 +365,15 @@ def main():
     window.close()
 
 
-def generate_response(question):
+def generate_response(question,modelo):
     global message_history  # Accede a la variable global
 
     # Añade la pregunta del usuario al historial de mensajes
     message_history.append({"role": "user", "content": question})
 
-    MODEL = "gpt-3.5-turbo"
+    #MODEL = "gpt-3.5-turbo"
     response = openai.ChatCompletion.create(
-        model=MODEL,
+        model=modelo,
         messages=message_history,
         temperature=0.5,
     )
