@@ -25,13 +25,14 @@ def check_for_updates():
         data = json.loads(response.text)
         
         latest_version = data['tag_name']
-        current_version = "V1.0.9"  # Define tu versión actual aquí
+        current_version = "V1.0.8"  # Define tu versión actual aquí
         if current_version != latest_version:
             sg.popup(
                 f"¡Hay una nueva versión disponible ({latest_version})!",
                 title="Actualización disponible",
                 keep_on_top=True,
                 modal=True,
+                icon=icono,
                 location=(None, None),
                 text_color="red",
 
@@ -201,7 +202,7 @@ def show_configuration_window():
             else:
                 update_api_key(new_api_key)
                 window.close()
-                sg.popup("La clave API ha sido actualizada.")
+                sg.popup("La clave API ha sido actualizada.",icon=icono)
                 break
         elif event == "cancel_new_api_key" or event == sg.WIN_CLOSED:
             break
@@ -307,7 +308,7 @@ def main():
                 f.write(f"Pregunta: {values['question']}\n")
                 f.write(f"Respuesta: {values[event][0]}\n\n")
             if response_cost > 17.50:
-                sg.popup("Advertencia", f"El coste total acumulado es de ${response_cost:.2f}, superior a $17.50.", location=(None, None))
+                sg.popup("Advertencia", f"El coste total acumulado es de ${response_cost:.2f}, superior a $17.50.", location=(None, None),icon=icono)
         elif event == "clear_question":
                 # Clear the question input
             window["question"].update("")
@@ -339,7 +340,7 @@ def main():
             show_configuration_window()  # Llama a la función
 
         elif event == '-ERROR-':
-            sg.popup_error(values['-ERROR-'])
+            sg.popup_error(values['-ERROR-'],icon=icono)
             clear_history()
             
             thread_event.set()
