@@ -6,6 +6,7 @@ Puedes crear tu api en https://platform.openai.com/docs/models/chatgpt y en el l
 Será valida hasta el 1 de mayo del 2023 y tienes $18 dolares de regalo
 a un coste de 0,002 cada 1000 tokens (un token más o menos 4 palabras).
 
-![Captura de pantalla 2023-04-17 135841](https://user-images.githubusercontent.com/2462238/232521718-d5e16821-e078-41f8-8141-34239ccc5e7d.jpg)
+![Captura de pantalla 2023-04-18 161447](https://user-images.githubusercontent.com/2462238/232805218-371444fe-7eb1-47ab-a90f-4d03af015856.jpg)
+
 
 
