@@ -13,7 +13,7 @@ import threading
 import sys
 from cryptography.fernet import Fernet
 from base64 import urlsafe_b64encode, urlsafe_b64decode
-version="V1.0.9"
+version="V1.0.10"
 ERROR_MESSAGES = {
     "EMPTY_API_KEY": "Por favor, introduce una clave API.",
 }
@@ -41,7 +41,41 @@ def check_for_updates():
                 custom_text=("Ir a la página de Github", "Cerrar")
             )
             webbrowser.open("https://github.com/emo44/ChatGPT-API")
+def verify_api_key(api_key):
+    openai.api_key = api_key
+    try:
+        openai.Model.list()
+        return
+    except Exception as e:
+        sg.popup(
+            f"¡API key inválida\nBorrando el config.ini para que le pida de nuevo la API!",
+            title="API key inválida",
+            keep_on_top=True,
+            modal=True,
+            icon=icono,
+            location=(None, None),
+            text_color="white",
+
+            button_color=("white", "blue")
+            )
+        # Ruta del archivo a borrar
+        archivo = 'config.ini'
+
+        # Verificar si el archivo existe
+        if os.path.exists(archivo):
+            # Borrar el archivo
+            os.remove(archivo)
+            print('Archivo borrado exitosamente')
+        else:
+            print('El archivo no existe')
+        sys.exit()
 def load_models():
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    encrypted_api_key = config["API"]["api_key"]
+    encryption_key = urlsafe_b64decode(config["API"]["encryption_key"])
+    api_key = decrypt_api_key(encrypted_api_key, encryption_key)
+    verify_api_key(api_key)
     models = openai.Model.list()
     gpt_models = []
     for model in models['data']:
