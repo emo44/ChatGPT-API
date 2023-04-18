@@ -23,7 +23,7 @@ def check_for_updates():
         data = json.loads(response.text)
         
         latest_version = data['tag_name']
-        current_version = "V1.0.6"  # Define tu versión actual aquí
+        current_version = "V1.0.7"  # Define tu versión actual aquí
         if current_version != latest_version:
             sg.popup(
                 f"¡Hay una nueva versión disponible ({latest_version})!",
@@ -241,7 +241,7 @@ def main():
         [sg.Text("Log:           "),sg.Multiline(size=(100, 10), key="log_output")],
         [sg.Text("", expand_x=True),sg.Button("Borrar log", size=(10, 1), key="clear_log")],
         [sg.Text("Costo total: $", size=(15, 1)), sg.Text(f"{total_cost:.2f}", key="total_cost_value", size=(10, 1))],
-        [sg.Button("Configuración", size=(14, 1), key="config"), sg.Button("Acerca", size=(10, 1), key="about"), sg.Button("Salir", size=(10, 1), key="exit", button_color=("white", "red"), pad=((500, 0), (10, 10)))]
+        [sg.Button("Nuevo Chat", size=(14, 1), key="nuevo", button_color=("white", "blue")),sg.Button("Configuración", size=(14, 1), key="config"), sg.Button("Acerca", size=(10, 1), key="about"), sg.Button("Salir", size=(10, 1), key="exit", button_color=("white", "red"), pad=((350, 0), (10, 10)))]
 
     ]
     
@@ -318,6 +318,12 @@ def main():
                 pyperclip.copy(response)
         elif event == "about":
             show_about_window()
+        elif event == "nuevo":
+            clear_history()
+            window["response"].update("Empezando nuevo Chat, historial borrado y tokens inicializados...")
+            window["question"].update("")
+            window["submit"].update(disabled=False)
+            
 
         elif event == '-LOG-':
             window['log_output'].update(values['log_output']+"\n" + values[event])
