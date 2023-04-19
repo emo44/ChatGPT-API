@@ -18,6 +18,8 @@ Especificaciones:
 
 5.-El programa busca si existe una actualización nueva para descargar
 
+6.-Un solo fichero py, compatible con Windows, mac y Linux
+
 
 ![Captura de pantalla 2023-04-18 215444](https://user-images.githubusercontent.com/2462238/232890629-23e36b4e-9e8a-40b5-93f8-546fc1462e40.jpg)
 
