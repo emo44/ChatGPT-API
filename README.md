@@ -2,9 +2,6 @@
 
 [![Github All Releases](https://img.shields.io/github/downloads/emo44/ChatGPT-API/total.svg)]()
 
-
-
-
 Puedes crear tu api en https://platform.openai.com/docs/models/chatgpt y en el login utilizar tu propio usuario y password de ChatGPT
 
 Será valida hasta el 1 de mayo del 2023 y tienes $18 dolares de regalo
