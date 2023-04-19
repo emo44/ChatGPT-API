@@ -1,4 +1,4 @@
-# pyinstaller --windowed  ChatGPT-EMO.py --onefile 
+# pyinstaller --windowed  ChatGPT-EMO.py --onefile --icon="C:\Users\emo\python\images\openai.ico"
 import base64
 import requests
 import json
@@ -11,6 +11,7 @@ import PySimpleGUI as sg
 import configparser
 import threading
 import sys
+import datetime
 from cryptography.fernet import Fernet
 from base64 import urlsafe_b64encode, urlsafe_b64decode
 version="V1.1.0"
@@ -217,7 +218,12 @@ if api_key is None:
 openai.api_key = api_key
 
 def show_about_window():
-    layout = [[sg.Text("Creado por Emo para el modelo ChatGPT 3.5 Turbo,\ngratis la api hasta el 1 de mayo del 2023 con 18$ de regalo")], [sg.Button("Cerrar")]]
+    # Obtener la fecha y hora actual
+    fecha_actual = datetime.datetime.now()
+
+    # Obtener el año actual
+    año_actual = fecha_actual.year
+    layout = [[sg.Text("Creado por Emo\nVersión:"+version+"\n2023-"+str(año_actual))], [sg.Button("Cerrar")]]
     window = sg.Window("Acerca de", layout, keep_on_top=True, icon=icono)
     
     while True:
@@ -271,7 +277,6 @@ def main():
     save_total_cost(total_cost, config)
 
 
-
     # Define the layout of the GUI
 
 
@@ -311,7 +316,6 @@ def main():
 
             modelo = values["model"]
             
-
         if event == "submit":
             # Desactivar el botón "Enviar"
             window["submit"].update(disabled=True)
@@ -353,8 +357,8 @@ def main():
             with open("log.txt", "a") as f:
                 f.write(f"Pregunta: {values['question']}\n")
                 f.write(f"Respuesta: {values[event][0]}\n\n")
-            if response_cost > 17.50:
-                sg.popup("Advertencia", f"El coste total acumulado es de ${response_cost:.2f}, superior a $17.50.", location=(None, None),icon=icono)
+            #if response_cost > 17.50:
+                #sg.popup("Advertencia", f"El coste total acumulado es de ${response_cost:.2f}, superior a $17.50.", location=(None, None),icon=icono)
         elif event == "clear_question":
                 # Clear the question input
             window["question"].update("")
