@@ -1,5 +1,5 @@
 # ChatGPT-API
-[![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=emo44)](https://github.com/anuraghazra/github-readme-stats)
+
 
 Puedes crear tu api en https://platform.openai.com/docs/models/chatgpt y en el login utilizar tu propio usuario y password de ChatGPT
 
