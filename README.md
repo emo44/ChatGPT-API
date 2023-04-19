@@ -1,7 +1,7 @@
 # ChatGPT-API
 
 [![Github All Releases](https://img.shields.io/github/downloads/emo44/ChatGPT-API/total.svg)]()
-[![Github All Releases](https://img.shields.io/bower/l/bootstrap].()
+
 
 Puedes crear tu api en https://platform.openai.com/docs/models/chatgpt y en el login utilizar tu propio usuario y password de ChatGPT
 
